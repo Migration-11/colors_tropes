@@ -1,0 +1,40 @@
+version: '3'
+services:
+  colors_tropes_app:
+    image: registry.uat.viacom18.com:5000/colors_tropes:uat
+    # ports:
+      #  - "5508:8501"
+    volumes:
+      - colors_tropes-volume-app-log:/app/logs/app
+      - colors_tropes-volume-app-data:/app/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL}
+      - LOG_API_ENDPOINT=${LOG_API_ENDPOINT}
+      - LOG_TYPE=api,file,console
+
+  colors_tropes_nginx:
+    image: registry.uat.viacom18.com:5000/colors_tropes:uat-re-proxy
+    container_name: colors_tropes-nginx-proxy
+    depends_on:
+        - colors_tropes_app
+    volumes:
+      - colors_tropes-volume-app-log:/app/logs/app
+      - colors_tropes-volume-nginx:/app/logs/nginx
+    ports:
+      - "5508:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]  
+    
+volumes:
+  colors_tropes-volume-app-log:
+    driver: local
+  colors_tropes-volume-nginx:
+    driver: local

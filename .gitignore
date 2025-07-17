@@ -1,0 +1,11 @@
+MVP/.ipynb_checkpoints
+MVP/__pycache__
+/.idea/
+venv/
+.history/
+MVP/logs/
+.env
+venv_tracks/
+.ipynb_checkpoints/
+__pycache__/
+MVP/data/

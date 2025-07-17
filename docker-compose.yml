@@ -1,0 +1,33 @@
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: ./MVP/Dockerfile-local
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./MVP/logs/app:/app/logs/app
+    environment:
+      - LOG_LEVEL=INFO
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - REDIS_PROTOCOL=3
+      - BASE_URL=http://localhost:8501/colors-tropes
+      - HEALTH_CHECK_URL=https://uat-common-services.jiostar.com/azure-sso/api/healthcheck
+      - ACTIVITY_URL=http://localhost:8501/api/activity
+      - VERIFY_AUTH_URL=https://uat-common-services.jiostar.com/azure-sso/api/azure/verify_token
+      - LOGOUT_URL=https://uat-common-services.jiostar.com/azure-sso/api/azure/logout
+      - LOGIN_URL=https://uat-common-services.jiostar.com/azure-sso/api/azure/login
+      - APPLICATION_NAME=colors-tropes
+      - FORCE_AUTH=false
+      - LOG_API_ENDPOINT=http://172.27.24.48:5003/v1/logs/colors-tropes
+      - LOG_TYPE=api,file,console
+
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:6.2
+    ports:
+      - "6379:6379"
