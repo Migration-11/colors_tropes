@@ -6,7 +6,7 @@ services:
       #  - "5508:8501"
     volumes:
       - colors_tropes-volume-app-log:/app/logs/app
-      - colors_tropes-volume-app-data:/app/data
+      - colors_tropes-volume-app-interactions:/app/interactions
     deploy:
       mode: replicated
       replicas: 1
@@ -35,6 +35,8 @@ services:
     
 volumes:
   colors_tropes-volume-app-log:
+    driver: local
+  colors_tropes-volume-app-interactions:
     driver: local
   colors_tropes-volume-nginx:
     driver: local
