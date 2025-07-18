@@ -111,9 +111,9 @@ def home_page() -> None:
             col1, col2 = st.columns([6, 0.1])
             with col1:
                 dt_object = datetime.fromtimestamp(comment['timestamp'])
-                ist_offset = timedelta(hours=5, minutes=30)
-                dt_ist = dt_object + ist_offset
-                formatted_time_ist = dt_ist.strftime('%H:%M, %d/%m')
+                # ist_offset = timedelta(hours=5, minutes=30)
+                # dt_ist = dt_object + ist_offset
+                formatted_time_ist = dt_object.strftime('%H:%M, %d/%m')
                 
                 st.markdown(f"- ({formatted_time_ist}) **{comment['user']}**: {comment['text']}")
                 
