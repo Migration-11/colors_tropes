@@ -6,7 +6,7 @@ services:
       #  - "5508:8501"
     volumes:
       - colors_tropes-volume-app-log:/app/logs/app
-      - colors_tropes-volume-app-interactions:/app/interactions
+      - colors_tropes-volume-app-data:/app/data
     environment:
       - LOG_LEVEL=INFO
       - REDIS_HOST=${REDIS_HOST}
@@ -61,7 +61,7 @@ services:
 volumes:
   colors_tropes-volume-app-log:
     driver: local
-  colors_tropes-volume-app-interactions:
+  colors_tropes-volume-app-data:
     driver: local
   colors_tropes-volume-nginx:
     driver: local

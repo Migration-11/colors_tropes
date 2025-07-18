@@ -9,4 +9,3 @@ venv_tracks/
 .ipynb_checkpoints/
 __pycache__/
 MVP/data/
-MVP/interactions/

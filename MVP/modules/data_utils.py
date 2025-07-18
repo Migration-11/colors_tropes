@@ -11,6 +11,22 @@ def load_data(file_path):
     """Loads the main track data from an Excel file."""
     return pd.read_excel(file_path)
 
+@st.cache_data
+def load_users(file_path, user):
+    if not os.path.exists(file_path):
+        pd.DataFrame(columns=['username']).to_csv(file_path, index=False)
+    db_df = pd.read_csv(file_path)
+    needs_update = True if user not in db_df['username'].values else False
+
+    if needs_update:
+        new_rows_df = pd.DataFrame({'username': [user]})
+        db_df = pd.concat([db_df, new_rows_df], ignore_index=True)
+        db_df.to_csv(file_path, index=False)
+        logger.info(f"Added new user: {user}")
+        
+    return db_df['username'].values
+
+
 def load_interactions_db(file_path, users, tracks_df):
     """Loads the user interaction database, creating or updating it if necessary."""
     

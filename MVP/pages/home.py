@@ -2,10 +2,10 @@ import os
 import streamlit as st
 import pandas as pd
 from streamlit_card import card
-from constants import DATA_PATH, USERS, DB_PATH, CHAT_DB_PATH
+from constants import DATA_PATH, DB_PATH, CHAT_DB_PATH, USERS_DB_PATH
 import time 
 from datetime import datetime, timedelta
-from modules.data_utils import load_data, load_interactions_db, load_context_db, save_db
+from modules.data_utils import load_data, load_interactions_db, load_context_db, save_db, load_users
 from modules.ui_utils import getTotal_likes_comments_views, chat_ui, updateViewCount
 from logger import get_logger
 
@@ -16,6 +16,7 @@ if "user" not in st.session_state:
 
 def home_page() -> None:
     df = load_data(DATA_PATH)
+    USERS = load_users(USERS_DB_PATH, st.session_state.user)
     db_df = load_interactions_db(DB_PATH, USERS, df)
     
     if "selected_card" not in st.session_state:
