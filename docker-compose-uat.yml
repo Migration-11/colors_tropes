@@ -7,15 +7,31 @@ services:
     volumes:
       - colors_tropes-volume-app-log:/app/logs/app
       - colors_tropes-volume-app-interactions:/app/interactions
+    environment:
+      - LOG_LEVEL=INFO
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_DB=${REDIS_DB}
+      - REDIS_PROTOCOL=${REDIS_PROTOCOL}
+      - BASE_URL=${BASE_URL}
+      - HEALTH_CHECK_URL=${HEALTH_CHECK_URL}
+      - ACTIVITY_URL=${ACTIVITY_URL}
+      - VERIFY_AUTH_URL=${VERIFY_AUTH_URL}
+      - LOGOUT_URL=${LOGOUT_URL}
+      - LOGIN_URL=${LOGIN_URL}
+      - APPLICATION_NAME=${APPLICATION_NAME}
+      - FORCE_AUTH=false
+      - LOG_API_ENDPOINT=${LOG_API_ENDPOINT}
+      - LOG_TYPE=api,file
+    
+    depends_on:
+      - redis
+    
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints: [node.role == manager]
-    environment:
-      - LOG_LEVEL=${LOG_LEVEL}
-      - LOG_API_ENDPOINT=${LOG_API_ENDPOINT}
-      - LOG_TYPE=api,file,console
 
   colors_tropes_nginx:
     image: registry.uat.viacom18.com:5000/colors_tropes:uat-re-proxy
@@ -32,6 +48,15 @@ services:
       replicas: 1
       placement:
         constraints: [node.role == manager]  
+  
+  redis:
+    image: redis:6.2
+    ports:
+      - "6379:6379"
+    deploy:
+      mode: replicated
+      replicas: 1
+
     
 volumes:
   colors_tropes-volume-app-log:

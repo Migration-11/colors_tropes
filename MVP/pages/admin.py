@@ -7,6 +7,9 @@ from logger import get_logger
 
 logger = get_logger(__file__)
 
+if "user" not in st.session_state:
+    st.markdown(f'<meta http-equiv="refresh" content="0;URL={os.environ.get("BASE_URL")}">', unsafe_allow_html=True)
+
 with st.sidebar:
     st.image(os.path.join(BASE_DIR, "media","tracks_logo.png"), width=150)
     
@@ -17,9 +20,6 @@ with st.sidebar:
 
 st.title("🔐 Admin Dashboard")
 
-if st.session_state.user != "abcd": #To Update
-    st.error("❌ You are not authorized to view this page.")
-    st.stop()
 
 st.markdown("### 📤 Upload New Data File")
 

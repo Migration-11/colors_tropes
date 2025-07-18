@@ -3,6 +3,9 @@ import os
 from constants import BASE_DIR
 # from constants import USERNAME
 
+if "user" not in st.session_state:
+    st.markdown(f'<meta http-equiv="refresh" content="0;URL={os.environ.get("BASE_URL")}">', unsafe_allow_html=True)
+
 with st.sidebar:
     st.image(os.path.join(BASE_DIR, "media","tracks_logo.png"), width=150)
     st.markdown(f"👤 **User:** `{st.session_state.user}`")

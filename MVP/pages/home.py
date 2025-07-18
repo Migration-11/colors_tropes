@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import pandas as pd
 from streamlit_card import card
@@ -9,12 +10,14 @@ from modules.ui_utils import getTotal_likes_comments_views, chat_ui, updateViewC
 from logger import get_logger
 
 logger = get_logger(__file__)
+
+if "user" not in st.session_state:
+    st.markdown(f'<meta http-equiv="refresh" content="0;URL={os.environ.get("BASE_URL")}">', unsafe_allow_html=True)
+
 def home_page() -> None:
     df = load_data(DATA_PATH)
     db_df = load_interactions_db(DB_PATH, USERS, df)
     
-    if "user" not in st.session_state:
-        st.session_state.user = USERS[0]
     if "selected_card" not in st.session_state:
         st.session_state.selected_card = None
     if 'db_df' not in st.session_state:
@@ -24,15 +27,7 @@ def home_page() -> None:
         st.image("https://img.icons8.com/fluency/48/film-reel.png", width=100) 
         st.markdown(f"👤 **User:** `{st.session_state.user}`")
         
-        #To Remove
-        selected_user_from_dropdown = st.selectbox(
-            "Select User:",
-            USERS,
-            index=USERS.index(st.session_state.user) if st.session_state.user in USERS else 0,
-        )
-        if selected_user_from_dropdown != st.session_state.user:
-            st.session_state.user = selected_user_from_dropdown
-            st.rerun()
+
             
         st.markdown("📺 **TV Track Dashboard**")
         st.markdown("---")
