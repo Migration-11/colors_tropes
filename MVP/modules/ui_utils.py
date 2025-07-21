@@ -1,11 +1,82 @@
 import time 
 import streamlit as st
-from modules.data_utils import save_db
+from modules.data_utils import save_db, load_interactions_db
 from modules.llm_utils import LLM_response
 from constants import CHAT_DB_PATH, DB_PATH
+from datetime import datetime
 from logger import get_logger
 
 logger = get_logger(__file__)
+
+@st.fragment
+def display_comments(idx, USERS, df, current_user):
+    db = load_interactions_db(DB_PATH, USERS, df)
+    all_comments = []
+    comments_for_track = db[db['track_id'] == idx]
+    col1, col2 = st.columns([6, 0.9])
+    with col1:
+        st.markdown("### 💬 Comments")
+    with col2:
+        if st.button(':small[Refresh Comments 🔁]', use_container_width=True):
+            st.rerun(scope='fragment')
+        
+    for _, comment_row in comments_for_track.iterrows():
+        comment_user = comment_row['username']
+        user_comments = comment_row['comments']
+        
+        for comment_index, comment_data in enumerate(user_comments):
+            comment_text = comment_data[0]
+            timestamp = comment_data[1]
+            
+            all_comments.append({
+                'user': comment_user,
+                'text': comment_text,
+                'timestamp': timestamp,
+                'user_comment_index': comment_index,
+                'is_current_user': comment_user == current_user
+            })
+    
+    all_comments.sort(key=lambda x: x['timestamp'])
+    
+    for comment in all_comments:
+        col1, col2 = st.columns([6, 0.1])
+        with col1:
+            dt_object = datetime.fromtimestamp(comment['timestamp'])
+            # ist_offset = timedelta(hours=5, minutes=30)
+            # dt_ist = dt_object + ist_offset
+            formatted_time_ist = dt_object.strftime('%H:%M, %d/%m')
+            
+            st.markdown(f"- ({formatted_time_ist}) **{comment['user']}**: {comment['text']}")
+            
+        with col2:
+            if comment['is_current_user']:
+                delete_key = f"delete_{idx}_{comment['user']}_{comment['user_comment_index']}"
+                if st.button("╳", key=delete_key, help="Delete this comment", type="tertiary"):
+                    try:
+                        row_index = db.index[(db['track_id'] == idx) & (db['username'] == current_user)][0]
+                        updated_comments = db.loc[row_index, 'comments'].copy()
+                        if comment['user_comment_index'] < len(updated_comments):
+                            updated_comments.pop(comment['user_comment_index'])
+                            db.at[row_index, 'comments'] = updated_comments
+                            save_db(db, DB_PATH)
+                            st.session_state.db_df = db.copy()
+                            st.rerun()
+                            
+                    except Exception as e:
+                        logger.error(f"Error in deleting comment, Error: {e}")
+                        
+    # comment_input = st.text_input("Add your comment:", key=f"comment_input_{idx}")
+    
+    if comment_input := st.chat_input("Add your comment:"):
+        # if comment_input.strip():
+            try:
+                row_index = db.index[(db['track_id'] == idx) & (db['username'] == current_user)][0]
+                db.loc[row_index, 'comments'].append([comment_input.strip(), time.time()])
+                save_db(db, DB_PATH)
+                st.rerun()
+                
+            except Exception as e:
+                logger.error(f"Error in Adding comment, Error: {e}")                
 
 def getTotal_likes_comments_views(idx):
     try:
@@ -39,6 +110,7 @@ def stream_message(message):
 @st.fragment
 def display_chat(db, creativity_level, show_name, show_desc, track):
     st.session_state.messages = db.loc[st.session_state.user_index, 'chat_history']    
+    
     if "prev_stream" not in st.session_state:
         st.session_state.prev_stream = len(st.session_state.messages)-1 if st.session_state.messages else 0
         
@@ -51,7 +123,7 @@ def display_chat(db, creativity_level, show_name, show_desc, track):
     
     col1, col2 = st.columns([3, 0.4])
     with col1:
-        if prompt := st.chat_input("What is up?"):
+        if prompt := st.chat_input("Deconstruct the past track, or construct the future..."):
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.spinner("Thinking..."): 
                 response = LLM_response(creativity_level, show_name, show_desc, track)
