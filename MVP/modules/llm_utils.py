@@ -63,26 +63,55 @@ Your persona and method for the Creative Adaptation task are defined by the foll
 - **New Show Name:** `{show_name}`
 - **New Show Logline/Description:** `{show_desc}`'''
 
+def LLM_response_stream(creativity_level, show_name, show_desc, track):
+    """
+    Generate and stream a response from the local Ollama model.
 
-def LLM_response(creativity_level, show_name, show_desc, track):
-    """Generate response using local model"""    
+    This function is a generator that yields chunks of the response as they are received.
+    """
     sys_prompt = getSysPrompt(creativity_level, show_name, show_desc, track)
     msg = manage_context(sys_prompt)
-    
     temperature = TEMPERATURE_CREATIVITY[creativity_level]
-    
+
     try:
-        client = Client(host='http://172.25.15.122:11434')
-        logger.info('Connection w server established')
-        try:
-            return client.chat(model = 'qwen2.5:14b-instruct', messages = msg, options = {'num_ctx': MAX_TOKENS, 'temperature':temperature})['message']['content']
-            
-        except Exception as e:
-            logger.error(f"Error in getting model reply, Error: {e}")
-            return "The AI model is currently unresponsive or not functioning as expected :(. Please report this issue to the Data Science team through the contact page."
-            
+        client = Client(host='http://172.27.24.48:11434')
+        logger.info('Connection with server established for streaming.')
+
+        stream = client.chat(
+            model='qwen2.5:14b-instruct',
+            messages=msg,
+            stream=True,
+            options={'num_ctx': MAX_TOKENS, 'temperature': temperature}
+        )
+
+        for chunk in stream:
+            if 'content' in chunk['message']:
+                yield chunk['message']['content']
+
     except Exception as e:
-        logger.error(f"Error connecting w server: {str(e)}")
+        logger.error(f"Error connecting with server or getting model reply: {e}")
+        error_message = "The AI model is currently unresponsive or not functioning as expected :(. Please report this issue to the Data Science team through the contact page."
+        yield error_message
+
+# def LLM_response(creativity_level, show_name, show_desc, track):
+#     """Generate response using local model"""    
+#     sys_prompt = getSysPrompt(creativity_level, show_name, show_desc, track)
+#     msg = manage_context(sys_prompt)
+    
+#     temperature = TEMPERATURE_CREATIVITY[creativity_level]
+    
+#     try:
+#         client = Client(host='http://172.25.15.122:11434')
+#         logger.info('Connection w server established')
+#         try:
+#             return client.chat(model = 'qwen2.5:14b-instruct', messages = msg, options = {'num_ctx': MAX_TOKENS, 'temperature':temperature})['message']['content']
+            
+#         except Exception as e:
+#             logger.error(f"Error in getting model reply, Error: {e}")
+#             return "The AI model is currently unresponsive or not functioning as expected :(. Please report this issue to the Data Science team through the contact page."
+            
+#     except Exception as e:
+#         logger.error(f"Error connecting w server: {str(e)}")
 
 # @st.cache_resource
 # def initialize_model():
